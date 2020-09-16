@@ -1,0 +1,43 @@
+version: '3'
+services:
+        mongo:
+                container_name: mongo_dev
+                build:
+                        context: ./mongo
+                volumes:
+                        - 'mongo_data:/data/db'
+                ports:
+                        - '27017:27017'
+
+        krakend:
+                container_name: krakend_dev
+                build:
+                        context: ./krakend
+                ports:
+                        - '8080:8080'
+
+
+        zookeeper-server:
+                container_name: zookeeper_dev
+                image: 'bitnami/zookeeper:latest'
+
+                ports:
+                        - '2181:2181'
+                environment:
+                        - ALLOW_ANONYMOUS_LOGIN=yes
+        kafka-server:
+                container_name: kafka_cluster_dev
+                build:
+                        context: ./kafka
+                ports:
+                        - '9092:9092'
+                environment:
+                        - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper-server:2181
+                        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+                        - ALLOW_PLAINTEXT_LISTENER=yes
+                depends_on:
+                        - zookeeper-server
+
+volumes:
+        mongo_data:
+                driver: local
